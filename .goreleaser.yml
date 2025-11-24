@@ -4,26 +4,11 @@ project_name: envgrd
 
 # Build configuration
 builds:
-  # Linux builds (amd64 only - ARM64 requires native build due to CGO)
-  - id: envgrd-linux
+  - id: envgrd
     main: ./cmd/envgrd
     binary: envgrd
     goos:
       - linux
-    goarch:
-      - amd64
-    env:
-      - CGO_ENABLED=1
-    ldflags:
-      - -s -w
-      - -X main.Version={{.Version}}
-    flags:
-      - -trimpath
-  # macOS and Windows builds (all architectures)
-  - id: envgrd-other
-    main: ./cmd/envgrd
-    binary: envgrd
-    goos:
       - darwin
       - windows
     goarch:
@@ -36,6 +21,11 @@ builds:
       - -X main.Version={{.Version}}
     flags:
       - -trimpath
+    # Skip ARM64 Linux due to CGO cross-compilation toolchain requirements
+    # ARM64 Linux can be built natively on ARM64 systems
+    skip:
+      - goos: linux
+        goarch: arm64
 
 # Archive configuration
 archives:

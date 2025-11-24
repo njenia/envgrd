@@ -35,10 +35,10 @@ detect_platform() {
         linux)
             PLATFORM="linux"
             EXT="tar.gz"
-            # ARM64 Linux builds are not available in releases due to CGO cross-compilation complexity
-            # Users should build from source on ARM64 Linux systems
-            if [ "$ARCH" = "arm64" ]; then
-                echo -e "${YELLOW}Note: ARM64 Linux binaries are not available in releases.${NC}"
+            # Only amd64 Linux builds are available in releases
+            # ARM64 Linux and other platforms should build from source
+            if [ "$ARCH" != "amd64" ]; then
+                echo -e "${YELLOW}Note: ${ARCH} Linux binaries are not available in releases.${NC}"
                 echo "Please build from source:"
                 echo "  git clone https://github.com/$REPO.git"
                 echo "  cd envgrd && make build"
@@ -50,9 +50,11 @@ detect_platform() {
             EXT="tar.gz"
             ;;
         *)
-            echo -e "${RED}Error: Unsupported OS: $OS${NC}"
-            echo "Please install manually from: https://github.com/$REPO/releases"
-            exit 1
+            echo -e "${YELLOW}Note: Pre-built binaries for $OS are not available in releases.${NC}"
+            echo "Please build from source:"
+            echo "  git clone https://github.com/$REPO.git"
+            echo "  cd envgrd && make build"
+            exit 0
             ;;
     esac
 }

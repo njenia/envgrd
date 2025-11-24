@@ -49,12 +49,7 @@ curl -sSL https://raw.githubusercontent.com/jenian/envgrd/main/install.sh | bash
 curl -L https://github.com/jenian/envgrd/releases/latest/download/envgrd-linux-amd64.tar.gz | tar -xz && sudo mv envgrd /usr/local/bin/
 ```
 
-**Linux (arm64):**
-```bash
-curl -L https://github.com/jenian/envgrd/releases/latest/download/envgrd-linux-arm64.tar.gz | tar -xz && sudo mv envgrd /usr/local/bin/
-```
-
-**macOS (amd64):**
+**macOS (amd64 / Intel):**
 ```bash
 curl -L https://github.com/jenian/envgrd/releases/latest/download/envgrd-darwin-amd64.tar.gz | tar -xz && sudo mv envgrd /usr/local/bin/
 ```
@@ -70,6 +65,17 @@ curl -L https://github.com/jenian/envgrd/releases/latest/download/envgrd-darwin-
 curl -L https://github.com/jenian/envgrd/releases/latest/download/envgrd-windows-amd64.zip -o envgrd.zip
 Expand-Archive envgrd.zip
 # Move envgrd.exe to a directory in your PATH
+```
+
+**Linux (arm64):**
+
+Pre-built binaries for ARM64 Linux are not available due to CGO cross-compilation requirements. Please build from source:
+
+```bash
+git clone https://github.com/jenian/envgrd.git
+cd envgrd
+make build
+# Binary will be in bin/envgrd
 ```
 
 ### From Source
