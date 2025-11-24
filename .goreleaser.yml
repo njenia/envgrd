@@ -21,6 +21,11 @@ builds:
       - -X main.Version={{.Version}}
     flags:
       - -trimpath
+    # Skip ARM64 Linux due to CGO cross-compilation toolchain requirements
+    # ARM64 Linux can be built natively on ARM64 systems using: make build
+    skip:
+      - goos: linux
+        goarch: arm64
 
 # Archive configuration
 archives:

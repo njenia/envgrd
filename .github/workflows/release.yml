@@ -24,11 +24,6 @@ jobs:
         with:
           go-version-file: 'go.mod'
 
-      - name: Install cross-compilation toolchain for ARM64 Linux
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
-
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
@@ -36,7 +31,4 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Set cross-compiler for ARM64 Linux
-          CC_aarch64_linux_gnu: aarch64-linux-gnu-gcc
-          CXX_aarch64_linux_gnu: aarch64-linux-gnu-g++
 

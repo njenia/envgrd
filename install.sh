@@ -35,6 +35,15 @@ detect_platform() {
         linux)
             PLATFORM="linux"
             EXT="tar.gz"
+            # ARM64 Linux builds are not available in releases due to CGO cross-compilation complexity
+            # Users should build from source on ARM64 Linux systems
+            if [ "$ARCH" = "arm64" ]; then
+                echo -e "${YELLOW}Note: ARM64 Linux binaries are not available in releases.${NC}"
+                echo "Please build from source:"
+                echo "  git clone https://github.com/$REPO.git"
+                echo "  cd envgrd && make build"
+                exit 0
+            fi
             ;;
         darwin)
             PLATFORM="darwin"
