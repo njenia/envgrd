@@ -1,6 +1,10 @@
 # Envgrd
 
-**Avoid environment variable drift** between your code and configuration files.
+<div align="center">
+
+### **Avoid environment variable drift** between your code and configuration files
+
+</div>
 
 ![Example](example_shot.png)
 
