@@ -2,7 +2,7 @@
 
 <div align="center">
 
-### **Avoid environment variable drift** between your code and configuration files
+## **Avoid environment variable drift** between your code and configuration files
 
 </div>
 
@@ -34,7 +34,15 @@ Envgrd is a CLI tool that scans codebases for environment variable usages using 
 
 ## Installation
 
-### Quick Install
+### Quick Install (Recommended)
+
+Install with a single command (auto-detects OS and architecture):
+
+```bash
+curl -sSL https://raw.githubusercontent.com/jenian/envgrd/main/install.sh | bash
+```
+
+### Manual Install
 
 **Linux (amd64):**
 ```bash
