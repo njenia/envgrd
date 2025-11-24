@@ -1,0 +1,19 @@
+# Example .envgrd.config file
+# Copy this to .envgrd.config in your project root
+
+ignores:
+  # Variables that are configured in custom ways (not in .env files or standard configs)
+  # These will not be reported as missing
+  missing:
+    - CUSTOM_API_KEY
+    - EXTERNAL_SERVICE_TOKEN
+    # Add more variable names here as needed
+  
+  # Folders to ignore when scanning (useful for config directories that aren't actual code)
+  folders:
+    - config
+    - configs
+    - k8s
+    - deployments
+    # Add more folder names here as needed
+
