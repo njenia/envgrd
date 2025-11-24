@@ -1,14 +1,26 @@
 # Envgrd
 
+![Example](example_shot.png)
+
+**Avoid environment variable drift** between your code and configuration files.
+
+### When does drift happen?
+
+Environment variable drift occurs in common scenarios like:
+- **Team collaboration**: You pull code and a teammate forgot to update the team about a new variable they introduced
+- **Code refactoring**: A developer removes or renames an environment variable in code but forgets to update the `.env` file or documentation
+- **Configuration cleanup**: Old environment variables remain in config files after the code that used them has been removed
+- **Onboarding**: New team members clone the repo and miss required environment variables that aren't documented
+- **Multi-environment setups**: Variables work in development but are missing in staging or production configurations
+
 A CLI tool that scans codebases for environment variable usages using Tree-Sitter AST analysis and compares them with environment configuration files and exported shell variables. Unlike regex-based approaches, AST analysis provides accurate parsing that understands code structure, handles edge cases correctly, and supports dynamic pattern detection across multiple languages with less false-positives and better accuracy.
 
-The tool automatically detects and reads from multiple environment file formats (`.env`, `.envrc`, `docker-compose.yml`, Kubernetes ConfigMaps/Secrets, systemd service files, shell scripts) and also considers variables exported to your shell environment (e.g., `export ABC=value`). This prevents false positives when variables are configured via CI/CD pipelines, secret management tools (Doppler, Vault), or shell exports.
 
 ## Features
 
-- Multiple language support: JavaScript, TypeScript, Go, Python, Rust, Java
 - Detects missing environment variables (used in code but not found in any config files or exported environment)
 - Detects unused environment variables (in config files but not used in code)
+- Multiple language support: JavaScript, TypeScript, Go, Python, Rust, Java
 - **Multi-format environment detection**: Automatically discovers and reads from `.env` files, `.envrc` (direnv), `docker-compose.yml`, Kubernetes ConfigMaps/Secrets, systemd service files, and shell scripts
 - **Shell environment integration**: Reads exported environment variables from your shell (e.g., `export VAR=value`), preventing false positives for variables set via CI/CD, secret managers, or shell exports
 - **Dynamic pattern detection**: Identifies runtime-evaluated expressions like `process.env["prefix_" + var]` and `os.Getenv(key + "_suffix")` that cannot be fully determined at static analysis time
