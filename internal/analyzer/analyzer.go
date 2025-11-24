@@ -9,11 +9,13 @@ import (
 // Analyze compares code-discovered environment variables with those in .env files
 // envVars: all environment variables (from .env files + exported env vars) - used for missing check
 // envVarsFromFiles: only variables from .env files - used for unused check
+// envKeySources: maps variable key to source file path
 // cfg: configuration for ignoring variables
-func Analyze(codeUsages []EnvUsage, envVars map[string]string, envVarsFromFiles map[string]string, cfg *config.Config) ScanResult {
+func Analyze(codeUsages []EnvUsage, envVars map[string]string, envVarsFromFiles map[string]string, envKeySources map[string]string, cfg *config.Config) ScanResult {
 	result := ScanResult{
 		CodeKeys:            codeUsages,
 		EnvKeys:             envVarsFromFiles, // Store .env file vars for display purposes
+		EnvKeySources:       envKeySources,    // Store source file for each variable
 		Missing:             make(map[string][]EnvUsage),
 		PartialMatches:      make(map[string][]EnvUsage),
 		Unused:              []string{},

@@ -18,7 +18,8 @@ func TestAnalyze_MissingKeys(t *testing.T) {
 	}
 
 	cfg := &config.Config{}
-	result := Analyze(codeUsages, envVars, envVars, cfg)
+	envKeySources := make(map[string]string)
+	result := Analyze(codeUsages, envVars, envVars, envKeySources, cfg)
 
 	// Should find 2 missing keys
 	if len(result.Missing) != 2 {
@@ -50,7 +51,8 @@ func TestAnalyze_UnusedKeys(t *testing.T) {
 	}
 
 	cfg := &config.Config{}
-	result := Analyze(codeUsages, envVars, envVars, cfg)
+	envKeySources := make(map[string]string)
+	result := Analyze(codeUsages, envVars, envVars, envKeySources, cfg)
 
 	// Should find 2 unused keys
 	if len(result.Unused) != 2 {
@@ -87,7 +89,8 @@ func TestAnalyze_NoIssues(t *testing.T) {
 	}
 
 	cfg := &config.Config{}
-	result := Analyze(codeUsages, envVars, envVars, cfg)
+	envKeySources := make(map[string]string)
+	result := Analyze(codeUsages, envVars, envVars, envKeySources, cfg)
 
 	if len(result.Missing) != 0 {
 		t.Errorf("Expected no missing keys, got %d", len(result.Missing))

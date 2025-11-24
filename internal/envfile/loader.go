@@ -14,6 +14,12 @@ type Loader struct {
 	autoDetect bool
 }
 
+// EnvVarWithSource represents an environment variable with its source file
+type EnvVarWithSource struct {
+	Value string
+	SourceFile string
+}
+
 // NewLoader creates a new env file loader
 func NewLoader() *Loader {
 	return &Loader{
@@ -204,12 +210,20 @@ func (l *Loader) findEnvFiles(rootPath string) ([]string, error) {
 // Load loads all configured env files and merges them
 // Later files override earlier ones
 func (l *Loader) Load(rootPath string) (map[string]string, error) {
+	allVars, _, err := l.LoadWithSources(rootPath)
+	return allVars, err
+}
+
+// LoadWithSources loads all configured env files and tracks which file each variable came from
+// Later files override earlier ones, but we track the source file for each variable
+func (l *Loader) LoadWithSources(rootPath string) (map[string]string, map[string]string, error) {
 	allVars := make(map[string]string)
+	sourceMap := make(map[string]string) // Maps variable key to source file path
 
 	// Find all env files (explicit + auto-detected)
 	envFiles, err := l.findEnvFiles(rootPath)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	for _, path := range envFiles {
@@ -220,16 +234,24 @@ func (l *Loader) Load(rootPath string) (map[string]string, error) {
 		}
 
 		// Merge: later files override earlier ones
+		// Track source file for each variable (only update if not already set, or if this file overrides)
 		for k, v := range vars {
 			allVars[k] = v
+			// Update source file - later files override earlier ones
+			sourceMap[k] = path
 		}
 	}
 
-	return allVars, nil
+	return allVars, sourceMap, nil
 }
 
 // LoadFromPath loads env files from a specific directory
 func (l *Loader) LoadFromPath(dirPath string) (map[string]string, error) {
 	return l.Load(dirPath)
+}
+
+// LoadFromPathWithSources loads env files from a specific directory and tracks source files
+func (l *Loader) LoadFromPathWithSources(dirPath string) (map[string]string, map[string]string, error) {
+	return l.LoadWithSources(dirPath)
 }
 

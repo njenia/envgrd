@@ -200,10 +200,21 @@ func runScan(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// Load environment variables from .env files
-	envVarsFromFiles, err := envLoader.LoadFromPath(absPath)
+	// Load environment variables from .env files with source tracking
+	envVarsFromFiles, envKeySources, err := envLoader.LoadFromPathWithSources(absPath)
 	if err != nil {
 		return fmt.Errorf("failed to load env files: %w", err)
+	}
+
+	// Make source file paths relative to scan root for better display
+	relEnvKeySources := make(map[string]string)
+	for k, sourcePath := range envKeySources {
+		if rel, err := filepath.Rel(absPath, sourcePath); err == nil && rel != "" {
+			relEnvKeySources[k] = rel
+		} else {
+			// Fallback to just the filename if relative path fails
+			relEnvKeySources[k] = filepath.Base(sourcePath)
+		}
 	}
 
 	// Create a copy for tracking which vars are from .env files only
@@ -273,7 +284,7 @@ func runScan(cmd *cobra.Command, args []string) error {
 	// Analyze results
 	// Use full envVars for missing check, but only envVarsFromFilesOnly for unused check
 	// cfg is already loaded earlier for folder ignores
-	result := analyzer.Analyze(allUsages, envVars, envVarsFromFilesOnly, cfg)
+	result := analyzer.Analyze(allUsages, envVars, envVarsFromFilesOnly, relEnvKeySources, cfg)
 
 	// Format output (dynamic is enabled by default, use !noDynamic)
 	dynamic := !noDynamic

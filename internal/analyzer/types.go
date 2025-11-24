@@ -22,8 +22,9 @@ type EnvFile struct {
 type ScanResult struct {
 	CodeKeys           []EnvUsage            // All env var usages found in code
 	EnvKeys            map[string]string     // All env vars from .env files
-	Missing            map[string][]EnvUsage // Missing keys (in code but not in .env) grouped by key
-	PartialMatches     map[string][]EnvUsage // Partial matches (dynamic code patterns) grouped by prefix/suffix
+	EnvKeySources      map[string]string     // Maps env var key to source file path
+	Missing            map[string][]EnvUsage  // Missing keys (in code but not in .env) grouped by key
+	PartialMatches     map[string][]EnvUsage  // Partial matches (dynamic code patterns) grouped by prefix/suffix
 	Unused             []string              // Unused keys (in .env but not in code)
 	IgnoredMissing     int                   // Count of missing variables that were ignored via config
 	IgnoredFromFolders int                   // Count of unique variables found in ignored folders

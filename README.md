@@ -1,8 +1,8 @@
 # Envgrd
 
-![Example](example_shot.png)
-
 **Avoid environment variable drift** between your code and configuration files.
+
+![Example](example_shot.png)
 
 ### When does drift happen?
 
@@ -13,8 +13,9 @@ Environment variable drift occurs in common scenarios like:
 - **Onboarding**: New team members clone the repo and miss required environment variables that aren't documented
 - **Multi-environment setups**: Variables work in development but are missing in staging or production configurations
 
-A CLI tool that scans codebases for environment variable usages using Tree-Sitter AST analysis and compares them with environment configuration files and exported shell variables. Unlike regex-based approaches, AST analysis provides accurate parsing that understands code structure, handles edge cases correctly, and supports dynamic pattern detection across multiple languages with less false-positives and better accuracy.
+Envgrd is a CLI tool that scans codebases for environment variable usages using Tree-Sitter AST analysis and compares them with environment configuration files and exported shell variables. Unlike regex-based approaches, AST analysis provides accurate parsing that understands code structure, handles edge cases correctly, and supports dynamic pattern detection across multiple languages with less false-positives and better accuracy.
 
+**💡 Tip**: Automate drift detection by using `envgrd` as a post-merge git hook to catch issues automatically after pulling code.
 
 ## Features
 
@@ -139,28 +140,6 @@ See the [Dynamic Expression Matching](#dynamic-expression-matching) section for 
 ```bash
 envgrd scan --silent
 ```
-
-## Examples
-
-### Missing variables
-
-```
-Missing environment variables:
-  - STRIPE_KEY
-    used in: ./services/payments.ts:14
-  - DATABASE_URL
-    used in: ./config/db.go:42
-```
-
-### Unused variables
-
-```
-Unused variables:
-  - OLD_API_KEY=true (in .env)
-  - TEST_MODE=false (in .env)
-```
-
-**Note**: Only variables from configuration files are checked for unused status. Variables exported to your shell environment are not included in this check, as they may be used by other processes or tools.
 
 ## Supported Languages
 

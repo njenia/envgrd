@@ -201,7 +201,12 @@ func formatHumanReadable(result analyzer.ScanResult, skipUnused bool, dynamic bo
 			value := result.EnvKeys[key]
 			// Redact the value
 			redactedValue := redactValue(value)
-			fmt.Printf("  %s%s%s=%s%s%s %s(in .env)%s\n", colorYellow, key, colorReset, colorGray, redactedValue, colorReset, colorGray, colorReset)
+			// Get source file, default to ".env" if not found
+			sourceFile := result.EnvKeySources[key]
+			if sourceFile == "" {
+				sourceFile = ".env"
+			}
+			fmt.Printf("  %s%s%s=%s%s%s %s(in %s)%s\n", colorYellow, key, colorReset, colorGray, redactedValue, colorReset, colorGray, sourceFile, colorReset)
 		}
 		fmt.Println()
 	}
