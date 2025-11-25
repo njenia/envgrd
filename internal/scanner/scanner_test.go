@@ -36,19 +36,33 @@ func TestScanner_Scan(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	// Create test files
-	os.MkdirAll(filepath.Join(tmpDir, "src"), 0755)
-	os.MkdirAll(filepath.Join(tmpDir, "node_modules"), 0755) // Should be excluded
+	if err := os.MkdirAll(filepath.Join(tmpDir, "src"), 0755); err != nil {
+		t.Fatalf("Failed to create src directory: %v", err)
+	}
+	if err := os.MkdirAll(filepath.Join(tmpDir, "node_modules"), 0755); err != nil {
+		t.Fatalf("Failed to create node_modules directory: %v", err)
+	}
 
 	// Create files that should be scanned
-	os.WriteFile(filepath.Join(tmpDir, "src", "app.js"), []byte("console.log('test');"), 0644)
-	os.WriteFile(filepath.Join(tmpDir, "src", "app.go"), []byte("package main"), 0644)
-	os.WriteFile(filepath.Join(tmpDir, "src", "app.py"), []byte("print('test')"), 0644)
+	if err := os.WriteFile(filepath.Join(tmpDir, "src", "app.js"), []byte("console.log('test');"), 0644); err != nil {
+		t.Fatalf("Failed to write app.js: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(tmpDir, "src", "app.go"), []byte("package main"), 0644); err != nil {
+		t.Fatalf("Failed to write app.go: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(tmpDir, "src", "app.py"), []byte("print('test')"), 0644); err != nil {
+		t.Fatalf("Failed to write app.py: %v", err)
+	}
 
 	// Create file in excluded directory
-	os.WriteFile(filepath.Join(tmpDir, "node_modules", "lib.js"), []byte("module.exports = {};"), 0644)
+	if err := os.WriteFile(filepath.Join(tmpDir, "node_modules", "lib.js"), []byte("module.exports = {};"), 0644); err != nil {
+		t.Fatalf("Failed to write lib.js: %v", err)
+	}
 
 	// Create binary file (should be excluded)
-	os.WriteFile(filepath.Join(tmpDir, "src", "image.png"), []byte("fake png"), 0644)
+	if err := os.WriteFile(filepath.Join(tmpDir, "src", "image.png"), []byte("fake png"), 0644); err != nil {
+		t.Fatalf("Failed to write image.png: %v", err)
+	}
 
 	scanner := NewScanner()
 	files, err := scanner.Scan(tmpDir)
@@ -72,8 +86,12 @@ func TestScanner_Scan(t *testing.T) {
 func TestScanner_ExcludeGlobs(t *testing.T) {
 	tmpDir := t.TempDir()
 
-	os.WriteFile(filepath.Join(tmpDir, "test.js"), []byte("test"), 0644)
-	os.WriteFile(filepath.Join(tmpDir, "test.go"), []byte("test"), 0644)
+	if err := os.WriteFile(filepath.Join(tmpDir, "test.js"), []byte("test"), 0644); err != nil {
+		t.Fatalf("Failed to write test.js: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(tmpDir, "test.go"), []byte("test"), 0644); err != nil {
+		t.Fatalf("Failed to write test.go: %v", err)
+	}
 
 	scanner := NewScanner()
 	scanner.SetExcludeGlobs([]string{"*.go"})

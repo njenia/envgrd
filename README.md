@@ -4,15 +4,13 @@
 
  **Avoid environment variable drift** between your code and configuration files
 
-[![CI](https://github.com/jenian/envgrd/actions/workflows/ci.yml/badge.svg)](https://github.com/jenian/envgrd/actions/workflows/ci.yml)
-
 </div>
 
 ![Example](example_shot.png)
 
 ### Why use envgrd?
 
-Environment variable drift happens when code and configuration get out of sync—teammates add new variables without updating configs, refactoring leaves orphaned variables, or onboarding misses undocumented requirements. These issues cause runtime failures and deployment headaches.
+Environment variable drift happens when code and configuration get out of sync - teammates add new variables without updating configs, refactoring leaves orphaned variables, or onboarding misses undocumented requirements. These issues cause runtime failures and deployment headaches.
 
 Envgrd uses Tree-Sitter AST analysis to accurately detect environment variable usage across your codebase and compare it with your configuration files. Unlike regex-based tools, AST parsing understands code structure, handles edge cases correctly, and supports dynamic patterns with fewer false positives.
 

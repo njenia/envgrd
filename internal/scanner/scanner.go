@@ -102,14 +102,6 @@ func detectLanguage(path string) Language {
 	}
 }
 
-// isExcludedDir checks if a directory should be excluded by name only
-// Path-based exclusions are handled separately for files (we want to scan files in ignored paths)
-func (s *Scanner) isExcludedDir(name string, _ string) bool {
-	// Only check directory name exclusions (like node_modules, vendor, etc.)
-	// Don't check path-based exclusions here - we want to scan files in ignored paths
-	return s.excludeDirs[name]
-}
-
 // isBinaryFile checks if a file is likely binary
 func isBinaryFile(path string) bool {
 	ext := strings.ToLower(filepath.Ext(path))

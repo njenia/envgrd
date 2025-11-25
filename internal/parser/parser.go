@@ -90,7 +90,9 @@ func (p *Parser) ParseFile(filePath string, lang string, scanRoot string) ([]ana
 	// Tree-sitter parsers are not thread-safe when used concurrently
 	tsParser := sitter.NewParser()
 	defer tsParser.Close()
-	tsParser.SetLanguage(language)
+	if err := tsParser.SetLanguage(language); err != nil {
+		return []analyzer.EnvUsage{}, fmt.Errorf("failed to set language: %w", err)
+	}
 	
 	var rootNode *sitter.Node
 	tree := tsParser.Parse(content, nil)
