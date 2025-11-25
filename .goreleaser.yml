@@ -8,12 +8,13 @@ builds:
     binary: envgrd
     goos:
       - linux
+      - darwin
+      - windows
     goarch:
       - amd64
+      - arm64
     env:
       - CGO_ENABLED=1
-    # Only building Linux - macOS and Windows require native toolchains for CGO
-    # macOS and Windows users should build from source: make build
     ldflags:
       - -s -w
       - -X main.Version={{.Version}}

@@ -9,12 +9,10 @@ permissions:
   contents: write  # Required for creating releases and uploading assets
 
 jobs:
-  # Build Linux binaries
-  build-linux:
-    name: Build Linux
+  release:
+    name: Release
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,62 +24,10 @@ jobs:
         with:
           go-version-file: 'go.mod'
 
-      - name: Run GoReleaser (Linux)
+      - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
           args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-
-  # Build macOS binaries on macOS runner (CGO requires native build)
-  build-macos:
-    name: Build macOS
-    runs-on: macos-latest
-    needs: build-linux  # Wait for Linux job to create release first
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: 'go.mod'
-
-      - name: Run GoReleaser (macOS)
-        uses: goreleaser/goreleaser-action@v6
-        with:
-          version: latest
-          args: release --clean --config .goreleaser-darwin.yml
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-
-  # Build Windows binaries on Windows runner (CGO requires native build)
-  build-windows:
-    name: Build Windows
-    runs-on: windows-latest
-    needs: build-linux  # Wait for Linux job to create release first
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: 'go.mod'
-
-      - name: Run GoReleaser (Windows)
-        uses: goreleaser/goreleaser-action@v6
-        with:
-          version: latest
-          args: release --clean --config .goreleaser-windows.yml
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
