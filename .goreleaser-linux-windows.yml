@@ -1,5 +1,4 @@
 # Goreleaser configuration for Linux and Windows builds
-version: 2
 project_name: envgrd
 
 # Build configuration
@@ -27,8 +26,7 @@ archives:
   - id: default
     format_overrides:
       - goos: windows
-        formats:
-          - zip
+        format: zip
     name_template: >-
       {{ .ProjectName }}-{{ .Os }}-{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}
     files:

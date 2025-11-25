@@ -1,5 +1,4 @@
 # Goreleaser configuration for macOS builds
-version: 2
 project_name: envgrd
 
 # Build configuration
