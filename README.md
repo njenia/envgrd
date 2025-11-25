@@ -5,8 +5,11 @@
 </div>
 
 <div align="center">
+
 ![Example](example_shot.png)
+
 </div>
+
 
 ### Why use envgrd?
 
