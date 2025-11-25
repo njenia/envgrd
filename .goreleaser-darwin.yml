@@ -36,7 +36,7 @@ checksum:
 
 # Release configuration
 release:
-  mode: replace
+  mode: append
   header: |
     ## Envgrd {{ .Tag }}
     
