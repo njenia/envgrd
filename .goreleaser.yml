@@ -1,29 +1,13 @@
 # Goreleaser configuration for Envgrd
-version: 2
 project_name: envgrd
 
 # Build configuration
 builds:
-  # Linux builds (amd64 only - ARM64 requires native build)
-  - id: envgrd-linux
+  - id: envgrd
     main: ./cmd/envgrd
     binary: envgrd
     goos:
       - linux
-    goarch:
-      - amd64
-    env:
-      - CGO_ENABLED=1
-    ldflags:
-      - -s -w
-      - -X main.Version={{.Version}}
-    flags:
-      - -trimpath
-  # macOS builds (both architectures)
-  - id: envgrd-darwin
-    main: ./cmd/envgrd
-    binary: envgrd
-    goos:
       - darwin
     goarch:
       - amd64
@@ -35,30 +19,19 @@ builds:
       - -X main.Version={{.Version}}
     flags:
       - -trimpath
-  # Windows builds (both architectures)
-  - id: envgrd-windows
-    main: ./cmd/envgrd
-    binary: envgrd
-    goos:
-      - windows
-    goarch:
-      - amd64
-      - arm64
-    env:
-      - CGO_ENABLED=1
-    ldflags:
-      - -s -w
-      - -X main.Version={{.Version}}
-    flags:
-      - -trimpath
+    # Skip ARM64 Linux due to CGO cross-compilation toolchain requirements
+    # Skip Windows - CGO cross-compilation from Linux requires Windows toolchain
+    skip:
+      - goos: linux
+        goarch: arm64
+      - goos: windows
 
 # Archive configuration
 archives:
   - id: default
     format_overrides:
       - goos: windows
-        formats:
-          - zip
+        format: zip
     name_template: >-
       {{ .ProjectName }}-{{ .Os }}-{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}
     files:
