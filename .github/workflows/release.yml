@@ -13,6 +13,7 @@ jobs:
   build-macos:
     name: Build macOS
     runs-on: macos-latest
+    needs: build-linux-windows  # Wait for Linux job to create release first
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
