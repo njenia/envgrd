@@ -28,8 +28,9 @@ archives:
     files:
       - README.md
 
-# Checksums - skipped for macOS since Linux job already creates checksums.txt
-# The Linux job creates checksums.txt, and macOS job appends binaries only
+# Checksums - disabled for macOS since Linux job already creates checksums.txt
+checksum:
+  disable: true
 
 # Release configuration
 release:
