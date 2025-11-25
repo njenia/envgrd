@@ -1,4 +1,5 @@
 # Goreleaser configuration for envgrd
+version: 2
 project_name: envgrd
 
 # Build configuration
@@ -62,6 +63,6 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
-      - Merge pull reenvgrdst
+      - Merge pull request
       - Merge branch
 
