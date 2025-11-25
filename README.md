@@ -1,7 +1,8 @@
 # Envgrd
 
 <div align="center">
- **Avoid environment variable drift** between your code and configuration files
+ Avoid environment variable drift between your code and configuration files
+
 </div>
 
 <div align="center">
