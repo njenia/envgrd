@@ -1,4 +1,4 @@
-# Goreleaser configuration for Envgrd
+# Goreleaser configuration for envgrd
 project_name: envgrd
 
 # Build configuration
@@ -9,22 +9,17 @@ builds:
     goos:
       - linux
       - darwin
+      - windows
     goarch:
       - amd64
       - arm64
     env:
-      - CGO_ENABLED=1
+      - CGO_ENABLED=0
     ldflags:
       - -s -w
       - -X main.Version={{.Version}}
     flags:
       - -trimpath
-    # Skip ARM64 Linux due to CGO cross-compilation toolchain requirements
-    # Skip Windows - CGO cross-compilation from Linux requires Windows toolchain
-    skip:
-      - goos: linux
-        goarch: arm64
-      - goos: windows
 
 # Archive configuration
 archives:
@@ -35,6 +30,7 @@ archives:
     name_template: >-
       {{ .ProjectName }}-{{ .Os }}-{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}
     files:
+      - LICENSE
       - README.md
 
 # Checksums
@@ -46,7 +42,7 @@ checksum:
 release:
   mode: replace
   header: |
-    ## Envgrd {{ .Tag }}
+    ## envgrd {{ .Tag }}
     
     Automated release via [GoReleaser](https://goreleaser.com)
   footer: |
@@ -64,6 +60,6 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
-      - Merge pull request
+      - Merge pull reenvgrdst
       - Merge branch
 
