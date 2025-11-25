@@ -1,19 +1,19 @@
-# Goreleaser configuration for envgrd
+# Goreleaser configuration for macOS builds
 project_name: envgrd
 
 # Build configuration
 builds:
-  - id: envgrd
+  # macOS builds (both architectures)
+  - id: envgrd-darwin
     main: ./cmd/envgrd
     binary: envgrd
     goos:
-      - linux
+      - darwin
     goarch:
       - amd64
+      - arm64
     env:
       - CGO_ENABLED=1
-    # Only building Linux - macOS and Windows require native toolchains for CGO
-    # macOS and Windows users should build from source: make build
     ldflags:
       - -s -w
       - -X main.Version={{.Version}}
@@ -23,24 +23,19 @@ builds:
 # Archive configuration
 archives:
   - id: default
-    format_overrides:
-      - goos: windows
-        format: zip
     name_template: >-
       {{ .ProjectName }}-{{ .Os }}-{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}
     files:
       - README.md
 
-# Checksums
-checksum:
-  name_template: 'checksums.txt'
-  algorithm: sha256
+# Checksums - skipped for macOS since Linux job already creates checksums.txt
+# The Linux job creates checksums.txt, and macOS job appends binaries only
 
 # Release configuration
 release:
-  mode: replace
+  mode: append
   header: |
-    ## envgrd {{ .Tag }}
+    ## Envgrd {{ .Tag }}
     
     Automated release via [GoReleaser](https://goreleaser.com)
   footer: |

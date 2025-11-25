@@ -1,19 +1,19 @@
-# Goreleaser configuration for envgrd
+# Goreleaser configuration for Windows builds
 project_name: envgrd
 
 # Build configuration
 builds:
-  - id: envgrd
+  # Windows builds (both architectures)
+  - id: envgrd-windows
     main: ./cmd/envgrd
-    binary: envgrd
+    binary: envgrd.exe
     goos:
-      - linux
+      - windows
     goarch:
       - amd64
+      - arm64
     env:
       - CGO_ENABLED=1
-    # Only building Linux - macOS and Windows require native toolchains for CGO
-    # macOS and Windows users should build from source: make build
     ldflags:
       - -s -w
       - -X main.Version={{.Version}}
@@ -23,24 +23,20 @@ builds:
 # Archive configuration
 archives:
   - id: default
-    format_overrides:
-      - goos: windows
-        format: zip
+    format: zip
     name_template: >-
       {{ .ProjectName }}-{{ .Os }}-{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}
     files:
       - README.md
 
-# Checksums
-checksum:
-  name_template: 'checksums.txt'
-  algorithm: sha256
+# Checksums - skipped for Windows since Linux job already creates checksums.txt
+# The Linux job creates checksums.txt, and Windows job appends binaries only
 
 # Release configuration
 release:
-  mode: replace
+  mode: append
   header: |
-    ## envgrd {{ .Tag }}
+    ## Envgrd {{ .Tag }}
     
     Automated release via [GoReleaser](https://goreleaser.com)
   footer: |
