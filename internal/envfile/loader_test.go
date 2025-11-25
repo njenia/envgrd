@@ -66,11 +66,15 @@ func TestLoader_Load(t *testing.T) {
 
 	// Create .env file
 	env1 := filepath.Join(tmpDir, ".env")
-	os.WriteFile(env1, []byte("KEY1=value1\nKEY2=value2\n"), 0644)
+	if err := os.WriteFile(env1, []byte("KEY1=value1\nKEY2=value2\n"), 0644); err != nil {
+		t.Fatalf("Failed to write .env file: %v", err)
+	}
 
 	// Create .env.local file (should override .env)
 	env2 := filepath.Join(tmpDir, ".env.local")
-	os.WriteFile(env2, []byte("KEY2=overridden\nKEY3=value3\n"), 0644)
+	if err := os.WriteFile(env2, []byte("KEY2=overridden\nKEY3=value3\n"), 0644); err != nil {
+		t.Fatalf("Failed to write .env.local file: %v", err)
+	}
 
 	loader := NewLoader()
 	vars, err := loader.Load(tmpDir)
