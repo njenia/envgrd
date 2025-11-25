@@ -1,5 +1,4 @@
 # Goreleaser configuration for envgrd
-version: 2
 project_name: envgrd
 
 # Build configuration
