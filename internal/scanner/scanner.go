@@ -40,53 +40,53 @@ func NewScanner() *Scanner {
 	return &Scanner{
 		excludeDirs: map[string]bool{
 			// JavaScript/TypeScript
-			"node_modules": true,
-			".next":        true,
-			".nuxt":        true,
-			".vuepress":    true,
-			".svelte-kit":  true,
-			".turbo":       true,
-			".yarn":        true,
-			".pnpm-store":  true,
-			".parcel-cache": true,
-			".rollup-cache": true,
-			".eslintcache": true,
+			"node_modules":    true,
+			".next":           true,
+			".nuxt":           true,
+			".vuepress":       true,
+			".svelte-kit":     true,
+			".turbo":          true,
+			".yarn":           true,
+			".pnpm-store":     true,
+			".parcel-cache":   true,
+			".rollup-cache":   true,
+			".eslintcache":    true,
 			".stylelintcache": true,
-			".tsbuildinfo": true,
-			".swc":         true,
+			".tsbuildinfo":    true,
+			".swc":            true,
 			// Go
 			"vendor": true,
 			// Python
-			"__pycache__": true,
-			".venv":       true,
-			"venv":        true,
+			"__pycache__":   true,
+			".venv":         true,
+			"venv":          true,
 			".pytest_cache": true,
-			".tox":        true,
-			".mypy_cache": true,
-			".ruff_cache": true,
+			".tox":          true,
+			".mypy_cache":   true,
+			".ruff_cache":   true,
 			// Rust
 			"target": true,
 			// Java
 			".gradle": true,
 			".mvn":    true,
 			// Build/Output directories
-			"build":  true,
-			"dist":   true,
-			"bin":    true,
-			"out":    true,
+			"build": true,
+			"dist":  true,
+			"bin":   true,
+			"out":   true,
 			// Version control
 			".git": true,
 			".svn": true,
 			".hg":  true,
 			// IDEs
-			".idea":  true,
+			".idea":   true,
 			".vscode": true,
-			".vs":    true,
+			".vs":     true,
 			// Infrastructure
-			".terraform": true,
+			".terraform":  true,
 			".serverless": true,
 			// Caches
-			".cache": true,
+			".cache":   true,
 			"coverage": true,
 			// OS files
 			".DS_Store": true,
@@ -145,18 +145,6 @@ func detectLanguage(path string) Language {
 	}
 }
 
-// isBinaryFile checks if a file is likely binary
-func isBinaryFile(path string) bool {
-	ext := strings.ToLower(filepath.Ext(path))
-	binaryExts := map[string]bool{
-		".png": true, ".jpg": true, ".jpeg": true, ".gif": true,
-		".pdf": true, ".zip": true, ".tar": true, ".gz": true,
-		".exe": true, ".dll": true, ".so": true, ".dylib": true,
-		".woff": true, ".woff2": true, ".ttf": true, ".eot": true,
-		".ico": true, ".svg": true, ".mp4": true, ".mp3": true,
-	}
-	return binaryExts[ext]
-}
 
 // matchesGlob checks if a path matches any of the glob patterns
 func matchesGlob(path string, globs []string) bool {
@@ -255,17 +243,12 @@ func (s *Scanner) Scan(rootPath string) ([]FileInfo, error) {
 		// If in ignored path, we still want to parse it to track variables,
 		// but we'll exclude them from the missing report
 
-		// Skip binary files
-		if isBinaryFile(path) {
-			return nil
-		}
-
 		// Check include/exclude globs
 		if !s.shouldInclude(path) {
 			return nil
 		}
 
-		// Detect language
+		// Detect language - only process files with recognized extensions (whitelist approach)
 		lang := detectLanguage(path)
 		if lang == LanguageUnknown {
 			return nil

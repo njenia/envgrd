@@ -59,9 +59,9 @@ func TestScanner_Scan(t *testing.T) {
 		t.Fatalf("Failed to write lib.js: %v", err)
 	}
 
-	// Create binary file (should be excluded)
-	if err := os.WriteFile(filepath.Join(tmpDir, "src", "image.png"), []byte("fake png"), 0644); err != nil {
-		t.Fatalf("Failed to write image.png: %v", err)
+	// Create file with unsupported extension (should be excluded by whitelist)
+	if err := os.WriteFile(filepath.Join(tmpDir, "src", "readme.txt"), []byte("readme content"), 0644); err != nil {
+		t.Fatalf("Failed to write readme.txt: %v", err)
 	}
 
 	scanner := NewScanner()
@@ -70,7 +70,7 @@ func TestScanner_Scan(t *testing.T) {
 		t.Fatalf("Scan failed: %v", err)
 	}
 
-	// Should find 3 source files (js, go, py) but not the one in node_modules or the binary
+	// Should find 3 source files (js, go, py) but not the one in node_modules or unsupported extensions
 	if len(files) != 3 {
 		t.Errorf("Expected 3 files, got %d", len(files))
 	}
