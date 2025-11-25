@@ -38,3 +38,26 @@ jobs:
       - name: Run tests
         run: go test ./...
 
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - name: Build envgrd binary
+        run: |
+          CGO_ENABLED=1 go build -o ./envgrd ./cmd/envgrd
+          chmod +x ./envgrd
+          # Verify binary exists and is executable
+          ls -la ./envgrd
+
+      - name: Run e2e tests
+        run: go test ./e2e/... -v
+

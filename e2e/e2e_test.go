@@ -11,14 +11,41 @@ import (
 )
 
 func getBinaryPath() string {
-	// Try ./envgrd first
-	if _, err := os.Stat("./envgrd"); err == nil {
-		return "./envgrd"
+	// Get the repo root by finding the go.mod file
+	// Start from the current directory and walk up
+	wd, err := os.Getwd()
+	if err != nil {
+		// Fallback to relative paths
+		wd = "."
 	}
-	// Try bin/envgrd
-	if _, err := os.Stat("bin/envgrd"); err == nil {
-		return "bin/envgrd"
+
+	// Try to find repo root (where go.mod is)
+	repoRoot := wd
+	for {
+		if _, err := os.Stat(filepath.Join(repoRoot, "go.mod")); err == nil {
+			break
+		}
+		parent := filepath.Dir(repoRoot)
+		if parent == repoRoot {
+			// Reached filesystem root, use current dir
+			repoRoot = wd
+			break
+		}
+		repoRoot = parent
 	}
+
+	// Try ./envgrd in repo root
+	binaryPath := filepath.Join(repoRoot, "envgrd")
+	if _, err := os.Stat(binaryPath); err == nil {
+		return binaryPath
+	}
+
+	// Try bin/envgrd in repo root
+	binaryPath = filepath.Join(repoRoot, "bin", "envgrd")
+	if _, err := os.Stat(binaryPath); err == nil {
+		return binaryPath
+	}
+
 	// Fallback to just "envgrd" (assumes it's in PATH)
 	return "envgrd"
 }
