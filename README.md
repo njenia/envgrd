@@ -191,7 +191,7 @@ By default, `envgrd` detects both static and dynamic environment variable patter
 
 Dynamic patterns are reported in a separate "Dynamic patterns" section since the exact environment variable name cannot be determined statically. Use the `--no-dynamic` flag to disable dynamic pattern detection and only report static patterns.
 
-## Configuration {#configuration}
+## Configuration
 
 ### .envgrd.config
 
