@@ -39,15 +39,58 @@ type Scanner struct {
 func NewScanner() *Scanner {
 	return &Scanner{
 		excludeDirs: map[string]bool{
+			// JavaScript/TypeScript
 			"node_modules": true,
-			"vendor":       true,
-			".git":         true,
-			"build":        true,
-			"dist":         true,
-			"bin":          true,
-			"out":          true,
 			".next":        true,
-			".cache":       true,
+			".nuxt":        true,
+			".vuepress":    true,
+			".svelte-kit":  true,
+			".turbo":       true,
+			".yarn":        true,
+			".pnpm-store":  true,
+			".parcel-cache": true,
+			".rollup-cache": true,
+			".eslintcache": true,
+			".stylelintcache": true,
+			".tsbuildinfo": true,
+			".swc":         true,
+			// Go
+			"vendor": true,
+			// Python
+			"__pycache__": true,
+			".venv":       true,
+			"venv":        true,
+			".pytest_cache": true,
+			".tox":        true,
+			".mypy_cache": true,
+			".ruff_cache": true,
+			// Rust
+			"target": true,
+			// Java
+			".gradle": true,
+			".mvn":    true,
+			// Build/Output directories
+			"build":  true,
+			"dist":   true,
+			"bin":    true,
+			"out":    true,
+			// Version control
+			".git": true,
+			".svn": true,
+			".hg":  true,
+			// IDEs
+			".idea":  true,
+			".vscode": true,
+			".vs":    true,
+			// Infrastructure
+			".terraform": true,
+			".serverless": true,
+			// Caches
+			".cache": true,
+			"coverage": true,
+			// OS files
+			".DS_Store": true,
+			"Thumbs.db": true,
 		},
 	}
 }
