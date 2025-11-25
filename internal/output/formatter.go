@@ -8,6 +8,12 @@ import (
 	"strings"
 
 	"github.com/jenian/envgrd/internal/analyzer"
+	"golang.org/x/term"
+)
+
+var (
+	// Color support detection
+	colorEnabled = initColorSupport()
 )
 
 // ANSI color codes
@@ -20,6 +26,26 @@ const (
 	colorGray   = "\033[90m"
 	colorBold   = "\033[1m"
 )
+
+// initColorSupport initializes color support for the terminal
+func initColorSupport() bool {
+	// Check if stdout is a terminal
+	if !term.IsTerminal(int(os.Stdout.Fd())) {
+		return false
+	}
+
+	// On Windows, enable ANSI escape sequences (handled in formatter_windows.go)
+	// On Unix-like systems, colors are supported if it's a terminal
+	return enableANSI()
+}
+
+// getColor returns the color code if colors are enabled, empty string otherwise
+func getColor(code string) string {
+	if colorEnabled {
+		return code
+	}
+	return ""
+}
 
 // JSONOutput represents the JSON output format
 type JSONOutput struct {
@@ -128,7 +154,7 @@ func formatHumanReadable(result analyzer.ScanResult, skipUnused bool, dynamic bo
 	// Missing variables
 	if len(result.Missing) > 0 {
 		hasIssues = true
-		fmt.Printf("%s%sMissing environment variables:%s\n\n", colorBold, colorRed, colorReset)
+		fmt.Printf("%s%sMissing environment variables:%s\n\n", getColor(colorBold), getColor(colorRed), getColor(colorReset))
 		keys := make([]string, 0, len(result.Missing))
 		for key := range result.Missing {
 			keys = append(keys, key)
@@ -137,20 +163,20 @@ func formatHumanReadable(result analyzer.ScanResult, skipUnused bool, dynamic bo
 
 		for _, key := range keys {
 			usages := result.Missing[key]
-			fmt.Printf("  %s%s%s\n", colorRed, key, colorReset)
+			fmt.Printf("  %s%s%s\n", getColor(colorRed), key, getColor(colorReset))
 			for _, usage := range usages {
 				filePath := usage.File
 				if filePath == "" {
 					filePath = "<unknown>"
 				}
-				fmt.Printf("    %sused in:%s %s%s%s:%s%d%s", colorGray, colorReset, colorCyan, filePath, colorReset, colorYellow, usage.Line, colorReset)
+				fmt.Printf("    %sused in:%s %s%s%s:%s%d%s", getColor(colorGray), getColor(colorReset), getColor(colorCyan), filePath, getColor(colorReset), getColor(colorYellow), usage.Line, getColor(colorReset))
 				if usage.CodeSnippet != "" {
 					// Truncate long snippets
 					snippet := usage.CodeSnippet
 					if len(snippet) > 80 {
 						snippet = snippet[:77] + "..."
 					}
-					fmt.Printf(" %s%s%s", colorGray, snippet, colorReset)
+					fmt.Printf(" %s%s%s", getColor(colorGray), snippet, getColor(colorReset))
 				}
 				fmt.Println()
 			}
@@ -161,7 +187,7 @@ func formatHumanReadable(result analyzer.ScanResult, skipUnused bool, dynamic bo
 	// Partial matches (dynamic patterns) - only show if dynamic mode is enabled
 	if dynamic && len(result.PartialMatches) > 0 {
 		hasIssues = true
-		fmt.Printf("%s%sDynamic patterns (runtime-evaluated expressions):%s\n", colorBold, colorYellow, colorReset)
+		fmt.Printf("%s%sDynamic patterns (runtime-evaluated expressions):%s\n", getColor(colorBold), getColor(colorYellow), getColor(colorReset))
 		keys := make([]string, 0, len(result.PartialMatches))
 		for key := range result.PartialMatches {
 			keys = append(keys, key)
@@ -171,20 +197,20 @@ func formatHumanReadable(result analyzer.ScanResult, skipUnused bool, dynamic bo
 		for _, key := range keys {
 			usages := result.PartialMatches[key]
 			// Display the key directly (which is the full expression for dynamic patterns)
-			fmt.Printf("  %s%s%s\n", colorYellow, key, colorReset)
+			fmt.Printf("  %s%s%s\n", getColor(colorYellow), key, getColor(colorReset))
 			for _, usage := range usages {
 				filePath := usage.File
 				if filePath == "" {
 					filePath = "<unknown>"
 				}
-				fmt.Printf("    %sused in:%s %s%s%s:%s%d%s", colorGray, colorReset, colorCyan, filePath, colorReset, colorYellow, usage.Line, colorReset)
+				fmt.Printf("    %sused in:%s %s%s%s:%s%d%s", getColor(colorGray), getColor(colorReset), getColor(colorCyan), filePath, getColor(colorReset), getColor(colorYellow), usage.Line, getColor(colorReset))
 				if usage.CodeSnippet != "" {
 					// Truncate long snippets
 					snippet := usage.CodeSnippet
 					if len(snippet) > 80 {
 						snippet = snippet[:77] + "..."
 					}
-					fmt.Printf(" %s%s%s", colorGray, snippet, colorReset)
+					fmt.Printf(" %s%s%s", getColor(colorGray), snippet, getColor(colorReset))
 				}
 				fmt.Println()
 			}
@@ -195,7 +221,7 @@ func formatHumanReadable(result analyzer.ScanResult, skipUnused bool, dynamic bo
 	// Unused variables
 	if !skipUnused && len(result.Unused) > 0 {
 		hasIssues = true
-		fmt.Printf("%s%sUnused variables:%s\n\n", colorBold, colorYellow, colorReset)
+		fmt.Printf("%s%sUnused variables:%s\n\n", getColor(colorBold), getColor(colorYellow), getColor(colorReset))
 		sort.Strings(result.Unused)
 		for _, key := range result.Unused {
 			value := result.EnvKeys[key]
@@ -206,19 +232,19 @@ func formatHumanReadable(result analyzer.ScanResult, skipUnused bool, dynamic bo
 			if sourceFile == "" {
 				sourceFile = ".env"
 			}
-			fmt.Printf("  %s%s%s=%s%s%s %s(in %s)%s\n", colorYellow, key, colorReset, colorGray, redactedValue, colorReset, colorGray, sourceFile, colorReset)
+			fmt.Printf("  %s%s%s=%s%s%s %s(in %s)%s\n", getColor(colorYellow), key, getColor(colorReset), getColor(colorGray), redactedValue, getColor(colorReset), getColor(colorGray), sourceFile, getColor(colorReset))
 		}
 		fmt.Println()
 	}
 
 	// Show ignored missing variables count
 	if result.IgnoredMissing > 0 {
-		fmt.Printf("%s%sNote:%s %d missing variable(s) were ignored (configured in .envgrd.config)\n", colorGray, colorBold, colorReset, result.IgnoredMissing)
+		fmt.Printf("%s%sNote:%s %d missing variable(s) were ignored (configured in .envgrd.config)\n", getColor(colorGray), getColor(colorBold), getColor(colorReset), result.IgnoredMissing)
 	}
 
 	// Show ignored variables from ignored folders
 	if result.IgnoredFromFolders > 0 {
-		fmt.Printf("%s%sNote:%s %d variable(s) found in ignored folders were excluded from the scan (configured in .envgrd.config)\n", colorGray, colorBold, colorReset, result.IgnoredFromFolders)
+		fmt.Printf("%s%sNote:%s %d variable(s) found in ignored folders were excluded from the scan (configured in .envgrd.config)\n", getColor(colorGray), getColor(colorBold), getColor(colorReset), result.IgnoredFromFolders)
 	}
 
 	if result.IgnoredMissing > 0 || result.IgnoredFromFolders > 0 {
@@ -236,9 +262,9 @@ func formatHumanReadable(result analyzer.ScanResult, skipUnused bool, dynamic bo
 			if result.IgnoredFromFolders > 0 {
 				parts = append(parts, fmt.Sprintf("%d from ignored folders", result.IgnoredFromFolders))
 			}
-			fmt.Printf("%s%s✓ No issues found (excluding %s).%s\n", colorGreen, colorBold, strings.Join(parts, ", "), colorReset)
+			fmt.Printf("%s%s✓ No issues found (excluding %s).%s\n", getColor(colorGreen), getColor(colorBold), strings.Join(parts, ", "), getColor(colorReset))
 		} else {
-			fmt.Printf("%s%s✓ No issues found. All environment variables are properly configured.%s\n", colorGreen, colorBold, colorReset)
+			fmt.Printf("%s%s✓ No issues found. All environment variables are properly configured.%s\n", getColor(colorGreen), getColor(colorBold), getColor(colorReset))
 		}
 	}
 
