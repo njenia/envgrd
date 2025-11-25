@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 
 	"github.com/jenian/envgrd/internal/analyzer"
@@ -18,6 +17,13 @@ import (
 
 // Version is set at build time via -ldflags
 var Version = "dev"
+
+// envVarData holds processed environment variable data
+type envVarData struct {
+	envVars              map[string]string // All env vars (from files + exported)
+	envVarsFromFilesOnly map[string]string // Only vars from .env files (for unused check)
+	relEnvKeySources     map[string]string // Relative paths to source files
+}
 
 var (
 	rootCmd = &cobra.Command{
@@ -106,7 +112,6 @@ func runScan(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("path does not exist: %s", absPath)
 	}
 
-	// Initialize components
 	fileScanner := scanner.NewScanner()
 	if len(includeGlobs) > 0 {
 		fileScanner.SetIncludeGlobs(includeGlobs)
@@ -128,7 +133,6 @@ func runScan(cmd *cobra.Command, args []string) error {
 		printHeader()
 	}
 
-	// Load configuration file (needed for folder ignores)
 	cfg, err := config.LoadConfig(absPath)
 	if err != nil {
 		if !silent {
@@ -137,12 +141,11 @@ func runScan(cmd *cobra.Command, args []string) error {
 		// Continue with default config
 		cfg = &config.Config{}
 	}
-	// Add folders from config to exclusions
+
 	if len(cfg.Ignores.Folders) > 0 {
 		fileScanner.AddExcludeDirs(cfg.Ignores.Folders)
 	}
 
-	// Scan for files
 	if !silent {
 		fmt.Fprintf(os.Stderr, "Scanning %s...\n", absPath)
 	}
@@ -152,58 +155,86 @@ func runScan(cmd *cobra.Command, args []string) error {
 	}
 
 	if !silent {
-		// Count files by language
-		langCounts := make(map[string]int)
-		for _, file := range files {
-			lang := string(file.Language)
-			if lang == "" {
-				lang = "unknown"
-			}
-			langCounts[lang]++
-		}
+		report := reportFileCounts(files)
+		fmt.Fprintf(os.Stderr, "%s\n", report)
+	}
 
-		// Build report string
-		var reportParts []string
-		langOrder := []string{"javascript", "typescript", "go", "python", "rust", "java"}
-		for _, lang := range langOrder {
-			if count, ok := langCounts[lang]; ok && count > 0 {
-				// Use short names for display
-				shortName := lang
-				switch lang {
-				case "javascript":
-					shortName = "js"
-				case "typescript":
-					shortName = "ts"
-				}
-				reportParts = append(reportParts, fmt.Sprintf("%s: %d", shortName, count))
-				delete(langCounts, lang)
-			}
-		}
-		// Add any remaining languages
-		for lang, count := range langCounts {
-			if count > 0 {
-				reportParts = append(reportParts, fmt.Sprintf("%s: %d", lang, count))
-			}
-		}
+	envData, err := loadEnvironmentVariables(envLoader, absPath)
+	if err != nil {
+		return err
+	}
 
-		if len(reportParts) > 0 {
-			reportStr := ""
-			for i, part := range reportParts {
-				if i > 0 {
-					reportStr += ", "
-				}
-				reportStr += part
+	allUsages := parseFiles(tsParser, files, absPath, silent)
+
+	result := analyzer.Analyze(allUsages, envData.envVars, envData.envVarsFromFilesOnly, envData.relEnvKeySources, cfg)
+
+	dynamic := !noDynamic
+	if err := output.Format(result, jsonOutput, silent, skipUnused, dynamic); err != nil {
+		return fmt.Errorf("failed to format output: %w", err)
+	}
+
+	if output.HasIssues(result, skipUnused, dynamic) {
+		os.Exit(1)
+	}
+
+	return nil
+}
+
+// reportFileCounts generates a formatted report string of file counts by language
+func reportFileCounts(files []scanner.FileInfo) string {
+	// Count files by language
+	langCounts := make(map[string]int)
+	for _, file := range files {
+		lang := string(file.Language)
+		if lang == "" {
+			lang = "unknown"
+		}
+		langCounts[lang]++
+	}
+
+	// Build report string
+	var reportParts []string
+	langOrder := []string{"javascript", "typescript", "go", "python", "rust", "java"}
+	for _, lang := range langOrder {
+		if count, ok := langCounts[lang]; ok && count > 0 {
+			// Use short names for display
+			shortName := lang
+			switch lang {
+			case "javascript":
+				shortName = "js"
+			case "typescript":
+				shortName = "ts"
 			}
-			fmt.Fprintf(os.Stderr, "Found %d files (%s)\n", len(files), reportStr)
-		} else {
-			fmt.Fprintf(os.Stderr, "Found %d files to parse\n", len(files))
+			reportParts = append(reportParts, fmt.Sprintf("%s: %d", shortName, count))
+			delete(langCounts, lang)
+		}
+	}
+	// Add any remaining languages
+	for lang, count := range langCounts {
+		if count > 0 {
+			reportParts = append(reportParts, fmt.Sprintf("%s: %d", lang, count))
 		}
 	}
 
-	// Load environment variables from .env files with source tracking
-	envVarsFromFiles, envKeySources, err := envLoader.LoadFromPathWithSources(absPath)
+	if len(reportParts) > 0 {
+		reportStr := ""
+		for i, part := range reportParts {
+			if i > 0 {
+				reportStr += ", "
+			}
+			reportStr += part
+		}
+		return fmt.Sprintf("Found %d files (%s)", len(files), reportStr)
+	}
+	return fmt.Sprintf("Found %d files to parse", len(files))
+}
+
+// loadEnvironmentVariables loads and processes environment variables from files and exported env
+func loadEnvironmentVariables(envLoader *envfile.Loader, absPath string) (*envVarData, error) {
+	// Load environment variables from files and merge with exported env
+	envVars, envVarsFromFilesOnly, envKeySources, err := envLoader.LoadWithExportedEnv(absPath)
 	if err != nil {
-		return fmt.Errorf("failed to load env files: %w", err)
+		return nil, fmt.Errorf("failed to load env files: %w", err)
 	}
 
 	// Make source file paths relative to scan root for better display
@@ -217,37 +248,19 @@ func runScan(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	// Create a copy for tracking which vars are from .env files only
-	envVarsFromFilesOnly := make(map[string]string)
-	for k, v := range envVarsFromFiles {
-		envVarsFromFilesOnly[k] = v
-	}
+	return &envVarData{
+		envVars:              envVars,
+		envVarsFromFilesOnly: envVarsFromFilesOnly,
+		relEnvKeySources:     relEnvKeySources,
+	}, nil
+}
 
-	// Also check exported environment variables
-	// This prevents false positives when vars are set via shell exports or CI/CD
-	envVars := make(map[string]string)
-	// Start with .env file vars
-	for k, v := range envVarsFromFiles {
-		envVars[k] = v
-	}
-	// Add environment-only vars
-	for _, env := range os.Environ() {
-		parts := strings.SplitN(env, "=", 2)
-		if len(parts) == 2 {
-			key := parts[0]
-			// Only add if not already in envVars (env files take precedence for values)
-			if _, exists := envVars[key]; !exists {
-				// Mark as present but don't store the actual value (for security)
-				envVars[key] = "[from environment]"
-			}
-		}
-	}
-
-	// Parse files in parallel
+// parses all files in parallel and returns environment variable usages
+func parseFiles(tsParser *parser.Parser, files []scanner.FileInfo, absPath string, silent bool) []analyzer.EnvUsage {
 	var allUsages []analyzer.EnvUsage
 	var wg sync.WaitGroup
 	var mu sync.Mutex
-	workers := make(chan struct{}, 10) // Limit concurrent workers
+	workers := make(chan struct{}, 10)
 
 	for _, file := range files {
 		wg.Add(1)
@@ -280,24 +293,7 @@ func runScan(cmd *cobra.Command, args []string) error {
 	}
 
 	wg.Wait()
-
-	// Analyze results
-	// Use full envVars for missing check, but only envVarsFromFilesOnly for unused check
-	// cfg is already loaded earlier for folder ignores
-	result := analyzer.Analyze(allUsages, envVars, envVarsFromFilesOnly, relEnvKeySources, cfg)
-
-	// Format output (dynamic is enabled by default, use !noDynamic)
-	dynamic := !noDynamic
-	if err := output.Format(result, jsonOutput, silent, skipUnused, dynamic); err != nil {
-		return fmt.Errorf("failed to format output: %w", err)
-	}
-
-	// Exit with error code if issues found
-	if output.HasIssues(result, skipUnused, dynamic) {
-		os.Exit(1)
-	}
-
-	return nil
+	return allUsages
 }
 
 func runInitSchema(cmd *cobra.Command, args []string) error {

@@ -10,20 +10,20 @@ import (
 
 // Loader handles loading and parsing environment files
 type Loader struct {
-	envFiles []string
+	envFiles   []string
 	autoDetect bool
 }
 
 // EnvVarWithSource represents an environment variable with its source file
 type EnvVarWithSource struct {
-	Value string
+	Value      string
 	SourceFile string
 }
 
 // NewLoader creates a new env file loader
 func NewLoader() *Loader {
 	return &Loader{
-		envFiles: []string{".env", ".env.local", "env.example"},
+		envFiles:   []string{".env", ".env.local", "env.example"},
 		autoDetect: true,
 	}
 }
@@ -46,7 +46,7 @@ func (l *Loader) SetEnvFiles(files []string) {
 // parseEnvFile parses a single environment file using the appropriate parser
 func parseEnvFile(path string) (map[string]string, error) {
 	fileType := detectFileType(path)
-	
+
 	switch fileType {
 	case "envrc":
 		return parseEnvrc(path)
@@ -124,7 +124,7 @@ func parseDotEnv(path string) (map[string]string, error) {
 // findEnvFiles finds all environment variable files in the directory
 func (l *Loader) findEnvFiles(rootPath string) ([]string, error) {
 	var files []string
-	
+
 	// Add explicitly configured files
 	for _, envFile := range l.envFiles {
 		var path string
@@ -137,26 +137,26 @@ func (l *Loader) findEnvFiles(rootPath string) ([]string, error) {
 			files = append(files, path)
 		}
 	}
-	
+
 	// Auto-detect additional files if enabled
 	if l.autoDetect {
 		entries, err := os.ReadDir(rootPath)
 		if err != nil {
 			return files, nil // Can't read directory, return what we have
 		}
-		
+
 		for _, entry := range entries {
 			if entry.IsDir() {
 				continue
 			}
-			
+
 			name := entry.Name()
 			filePath := filepath.Join(rootPath, name)
-			
+
 			// Check if it's an env file we should parse
 			fileType := detectFileType(filePath)
 			shouldInclude := false
-			
+
 			switch fileType {
 			case "envrc":
 				shouldInclude = true
@@ -187,7 +187,7 @@ func (l *Loader) findEnvFiles(rootPath string) ([]string, error) {
 					shouldInclude = true
 				}
 			}
-			
+
 			if shouldInclude {
 				// Check if already in list
 				alreadyIncluded := false
@@ -203,7 +203,7 @@ func (l *Loader) findEnvFiles(rootPath string) ([]string, error) {
 			}
 		}
 	}
-	
+
 	return files, nil
 }
 
@@ -255,3 +255,43 @@ func (l *Loader) LoadFromPathWithSources(dirPath string) (map[string]string, map
 	return l.LoadWithSources(dirPath)
 }
 
+// LoadWithExportedEnv loads env files and merges with exported environment variables
+// Returns:
+//   - allVars: Combined map of vars from files and exported env (env files take precedence)
+//   - fileVarsOnly: Only vars from files (for unused check)
+//   - sourceMap: Maps variable key to source file path
+func (l *Loader) LoadWithExportedEnv(rootPath string) (map[string]string, map[string]string, map[string]string, error) {
+	// Load from files with source tracking
+	fileVars, sourceMap, err := l.LoadWithSources(rootPath)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	// Create a copy for tracking which vars are from .env files only
+	fileVarsOnly := make(map[string]string)
+	for k, v := range fileVars {
+		fileVarsOnly[k] = v
+	}
+
+	// Merge with exported environment variables
+	// This prevents false positives when vars are set via shell exports or CI/CD
+	allVars := make(map[string]string)
+	// Start with .env file vars
+	for k, v := range fileVars {
+		allVars[k] = v
+	}
+	// Add environment-only vars
+	for _, env := range os.Environ() {
+		parts := strings.SplitN(env, "=", 2)
+		if len(parts) == 2 {
+			key := parts[0]
+			// Only add if not already in allVars (env files take precedence for values)
+			if _, exists := allVars[key]; !exists {
+				// Mark as present but don't store the actual value (for security)
+				allVars[key] = "[from environment]"
+			}
+		}
+	}
+
+	return allVars, fileVarsOnly, sourceMap, nil
+}
