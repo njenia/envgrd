@@ -23,58 +23,30 @@ func getBinaryPath() string {
 	return "envgrd"
 }
 
-func setupMockRepo(t *testing.T) string {
+func setupMockRepo(t *testing.T, repoName string) string {
 	// Get the testdata directory
-	testdataDir := filepath.Join("testdata", "mock-repo")
+	testdataDir := filepath.Join("testdata", repoName)
 
 	// Check if testdata directory exists
 	if _, err := os.Stat(testdataDir); os.IsNotExist(err) {
 		t.Fatalf("Testdata directory not found: %s", testdataDir)
 	}
 
-	// Copy testdata to a temporary directory
-	tmpDir := t.TempDir()
-
-	// Copy all files from testdata to tmpDir
-	err := filepath.Walk(testdataDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		// Get relative path from testdataDir
-		relPath, err := filepath.Rel(testdataDir, path)
-		if err != nil {
-			return err
-		}
-
-		destPath := filepath.Join(tmpDir, relPath)
-
-		if info.IsDir() {
-			return os.MkdirAll(destPath, info.Mode())
-		}
-
-		// Read source file
-		data, err := os.ReadFile(path)
-		if err != nil {
-			return err
-		}
-
-		// Write to destination
-		return os.WriteFile(destPath, data, info.Mode())
-	})
-
+	// Get absolute path to testdata directory
+	absPath, err := filepath.Abs(testdataDir)
 	if err != nil {
-		t.Fatalf("Failed to copy testdata: %v", err)
+		t.Fatalf("Failed to get absolute path: %v", err)
 	}
 
-	return tmpDir
+	// envgrd scan is read-only, so we can use testdata directly
+	return absPath
 }
 
 func normalizeOutput(output string) string {
 	// Normalize output for consistent comparison
 	// Remove ANSI color codes
 	output = removeANSICodes(output)
-	
+
 	// Remove any paths that might vary (like temp directories)
 	lines := strings.Split(output, "\n")
 	var normalized []string
@@ -84,12 +56,12 @@ func normalizeOutput(output string) string {
 			normalized = append(normalized, "Version: [VERSION]")
 			continue
 		}
-		
-		// Normalize scanning path
+
+		// Normalize scanning path (replace any absolute path with placeholder)
 		if strings.HasPrefix(line, "Scanning ") {
-			// Replace any temp directory paths with placeholder
-			if strings.Contains(line, "/var/folders/") || strings.Contains(line, "/tmp/") {
-				normalized = append(normalized, "Scanning [TEMP_DIR]...")
+			// Extract the path part and replace with placeholder
+			if idx := strings.Index(line, "..."); idx > 0 {
+				normalized = append(normalized, "Scanning [SCAN_DIR]...")
 			} else {
 				normalized = append(normalized, line)
 			}
@@ -120,12 +92,21 @@ func removeANSICodes(s string) string {
 	return result.String()
 }
 
-func TestE2E_BasicScan(t *testing.T) {
-	mockRepo := setupMockRepo(t)
+func runScanTest(t *testing.T, repoName string, envVars map[string]string) {
+	mockRepo := setupMockRepo(t, repoName)
 	binaryPath := getBinaryPath()
 
 	// Run envgrd scan
 	cmd := exec.Command(binaryPath, "scan", mockRepo)
+
+	// Set environment variables if provided
+	if envVars != nil {
+		cmd.Env = os.Environ()
+		for k, v := range envVars {
+			cmd.Env = append(cmd.Env, k+"="+v)
+		}
+	}
+
 	output, err := cmd.CombinedOutput()
 
 	outputStr := string(output)
@@ -145,4 +126,32 @@ func TestE2E_BasicScan(t *testing.T) {
 
 	// Use cupaloy for snapshot testing
 	cupaloy.SnapshotT(t, normalizedOutput)
+}
+
+func TestE2E_BasicScan(t *testing.T) {
+	runScanTest(t, "mock-repo", nil)
+}
+
+func TestE2E_ConfigIgnores(t *testing.T) {
+	// Test that variables in ignores.missing are not reported as missing
+	// and that files in ignored folders are not scanned
+	runScanTest(t, "mock-repo-ignores", nil)
+}
+
+func TestE2E_MultiLanguage(t *testing.T) {
+	// Test scanning files in multiple languages (Python, Rust, Java, TypeScript)
+	runScanTest(t, "mock-repo-multilang", nil)
+}
+
+func TestE2E_MultipleEnvFiles(t *testing.T) {
+	// Test that envgrd detects and loads multiple env files (.env, .env.production, .env.local)
+	runScanTest(t, "mock-repo-envfiles", nil)
+}
+
+func TestE2E_ExportedVars(t *testing.T) {
+	// Test that exported environment variables are recognized and prevent false positives
+	envVars := map[string]string{
+		"CI_TOKEN": "ci-token-value",
+	}
+	runScanTest(t, "mock-repo-exported", envVars)
 }

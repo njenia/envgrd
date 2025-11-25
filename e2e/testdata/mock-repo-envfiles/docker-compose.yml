@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  app:
+    image: myapp:latest
+    environment:
+      DOCKER_DB_HOST: postgres
+      DOCKER_DB_PORT: "5432"
+      DOCKER_REDIS_URL: redis://redis:6379
+    ports:
+      - "8080:8080"
+  
+  worker:
+    image: myapp:worker
+    environment:
+      - WORKER_QUEUE=high-priority
+      - WORKER_TIMEOUT=300
+

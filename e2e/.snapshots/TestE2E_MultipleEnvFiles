@@ -6,14 +6,13 @@
 Version: [VERSION]
 
 Scanning [SCAN_DIR]...
-Found 2 files (js: 1, go: 1)
-Missing environment variables:
-
-  MISSING_VAR_1
-    used in: src/config.js:4 const something = process.env.MISSING_VAR_1;
-
+Found 1 files (js: 1)
 Unused variables:
 
-  UNUSED_VAR=u...d (in .env)
+  DOCKER_REDIS_URL=[REDACTED] (in docker-compose.yml)
+  K8S_TIMEOUT=*** (in configmap.yaml)
+  SHELL_ENV=d...t (in setup.sh)
+  SYSTEMD_LOG_LEVEL=d...g (in app.service)
+  WORKER_TIMEOUT=*** (in docker-compose.yml)
 
 

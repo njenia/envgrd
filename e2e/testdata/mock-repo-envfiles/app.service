@@ -1,0 +1,16 @@
+[Unit]
+Description=My Application
+After=network.target
+
+[Service]
+Type=simple
+User=app
+Environment=SYSTEMD_PORT=8080
+Environment="SYSTEMD_DB_URL=postgres://localhost:5432/db"
+Environment=SYSTEMD_LOG_LEVEL=debug
+ExecStart=/usr/bin/myapp
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+

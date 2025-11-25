@@ -6,14 +6,14 @@
 Version: [VERSION]
 
 Scanning [SCAN_DIR]...
-Found 2 files (js: 1, go: 1)
+Found 1 files (go: 1)
 Missing environment variables:
 
-  MISSING_VAR_1
-    used in: src/config.js:4 const something = process.env.MISSING_VAR_1;
+  MISSING_VAR
+    used in: src/main.go:16 missingVar := os.Getenv("MISSING_VAR")
 
 Unused variables:
 
-  UNUSED_VAR=u...d (in .env)
+  DATABASE_URL=[REDACTED] (in .env)
 
 

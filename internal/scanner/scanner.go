@@ -145,7 +145,6 @@ func detectLanguage(path string) Language {
 	}
 }
 
-
 // matchesGlob checks if a path matches any of the glob patterns
 func matchesGlob(path string, globs []string) bool {
 	for _, glob := range globs {

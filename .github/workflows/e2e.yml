@@ -1,0 +1,36 @@
+name: E2E Tests
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+  # Also run on direct push/PR for testing
+  push:
+  pull_request:
+
+jobs:
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    # Only run if CI workflow succeeded (when triggered by workflow_run)
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # When triggered by workflow_run, checkout the commit from that workflow
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - name: Build envgrd binary
+        run: |
+          CGO_ENABLED=1 go build -o envgrd ./cmd/envgrd
+
+      - name: Run e2e tests
+        run: go test ./e2e/... -v
+

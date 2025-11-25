@@ -6,14 +6,9 @@
 Version: [VERSION]
 
 Scanning [SCAN_DIR]...
-Found 2 files (js: 1, go: 1)
-Missing environment variables:
-
-  MISSING_VAR_1
-    used in: src/config.js:4 const something = process.env.MISSING_VAR_1;
-
+Found 4 files (ts: 1, python: 1, rust: 1, java: 1)
 Unused variables:
 
-  UNUSED_VAR=u...d (in .env)
+  LOG_LEVEL=*** (in .env)
 
 
