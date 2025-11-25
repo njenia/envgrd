@@ -31,10 +31,14 @@ Envgrd uses Tree-Sitter AST analysis to accurately detect environment variable u
 
 ### Quick Install (Recommended)
 
-Install with a single command (auto-detects OS and architecture):
-
+**Linux/macOS:**
 ```bash
 curl -sSL https://raw.githubusercontent.com/njenia/envgrd/main/install.sh | bash
+```
+
+**Windows (PowerShell):**
+```powershell
+Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/njenia/envgrd/main/install.ps1 | Invoke-Expression
 ```
 
 ### Manual Install
@@ -56,10 +60,14 @@ curl -L https://github.com/njenia/envgrd/releases/latest/download/envgrd-darwin-
 
 **Windows:**
 ```powershell
+# Option 1: Use install script (recommended)
+Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/njenia/envgrd/main/install.ps1 | Invoke-Expression
+
+# Option 2: Manual installation
 # Download and extract
-curl -L https://github.com/njenia/envgrd/releases/latest/download/envgrd-windows-amd64.zip -o envgrd.zip
+Invoke-WebRequest -Uri https://github.com/njenia/envgrd/releases/latest/download/envgrd-windows-amd64.zip -OutFile envgrd.zip
 Expand-Archive envgrd.zip
-# Move envgrd.exe to a directory in your PATH
+# Move envgrd.exe to a directory in your PATH (e.g., C:\Program Files\envgrd\)
 ```
 
 **Linux (arm64):**
