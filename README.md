@@ -1,12 +1,12 @@
 # Envgrd
 
 <div align="center">
-
  **Avoid environment variable drift** between your code and configuration files
-
 </div>
 
+<div align="center">
 ![Example](example_shot.png)
+</div>
 
 ### Why use envgrd?
 
@@ -20,11 +20,12 @@ Envgrd uses Tree-Sitter AST analysis to accurately detect environment variable u
 
 - Detects missing environment variables (used in code but not found in any config files or exported environment)
 - Detects unused environment variables (in config files but not used in code)
-- Multiple language support: JavaScript, TypeScript, Go, Python, Rust, Java
-- **Multi-format environment detection**: Automatically discovers and reads from `.env` files, `.envrc` (direnv), `docker-compose.yml`, Kubernetes ConfigMaps/Secrets, systemd service files, and shell scripts
-- **Shell environment integration**: Reads exported environment variables from your shell (e.g., `export VAR=value`), preventing false positives for variables set via CI/CD, secret managers, or shell exports
-- **Dynamic pattern detection**: Identifies runtime-evaluated expressions like `process.env["prefix_" + var]` and `os.Getenv(key + "_suffix")` that cannot be fully determined at static analysis time
-- Supports multiple output formats (human-readable, JSON)
+- [Multiple language support](#supported-languages): JavaScript, TypeScript, Go, Python, Rust, Java
+- **[Multi-format environment detection](#environment-variable-sources)**: Automatically discovers and reads from `.env` files, `.envrc` (direnv), `docker-compose.yml`, Kubernetes ConfigMaps/Secrets, systemd service files, and shell scripts
+- **[Shell environment integration](#environment-variable-sources)**: Reads exported environment variables from your shell (e.g., `export VAR=value`), preventing false positives for variables set via CI/CD, secret managers, or shell exports
+- **[Dynamic pattern detection](#dynamic-expression-matching)**: Identifies runtime-evaluated expressions like `process.env["prefix_" + var]` and `os.Getenv(key + "_suffix")` that cannot be fully determined at static analysis time
+- [Supports multiple output formats](#usage) (human-readable, JSON)
+- **[Configurable ignore rules](#configuration)**: Ignore specific variables or folders via `.envgrd.config` to reduce false positives
 - Lightning-fast parallel processing
 
 ## Installation
@@ -103,7 +104,7 @@ go install github.com/njenia/envgrd/cmd/envgrd@latest
 
 **Note**: When building locally, use `make build` to automatically set the version from git tags. Building with `go build` directly will show version as "dev".
 
-## Usage
+## Usage {#usage}
 
 ### Basic scan
 
@@ -162,7 +163,7 @@ See the [Dynamic Expression Matching](#dynamic-expression-matching) section for 
 envgrd scan --silent
 ```
 
-## Supported Languages
+## Supported Languages {#supported-languages}
 
 All languages support both static (string literal) and dynamic (runtime-evaluated) environment variable patterns:
 
@@ -184,7 +185,7 @@ By default, `envgrd` detects both static and dynamic environment variable patter
 
 Dynamic patterns are reported in a separate "Dynamic patterns" section since the exact environment variable name cannot be determined statically. Use the `--no-dynamic` flag to disable dynamic pattern detection and only report static patterns.
 
-## Configuration
+## Configuration {#configuration}
 
 ### .envgrd.config
 
@@ -212,7 +213,7 @@ ignores:
 - **`ignores.missing`**: Variables listed here will not be reported as missing, even if they're not found in any environment files. The tool will show a count of ignored variables in the output.
 - **`ignores.folders`**: Folders listed here will be excluded from scanning. This is useful for configuration directories (like Kubernetes manifests, deployment configs) that contain environment variable references but aren't actual running code.
 
-## Environment Variable Sources
+## Environment Variable Sources {#environment-variable-sources}
 
 `envgrd` automatically detects and reads environment variables from multiple sources:
 
