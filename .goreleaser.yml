@@ -8,13 +8,15 @@ builds:
     binary: envgrd
     goos:
       - linux
-      - darwin
-      - windows
     goarch:
       - amd64
-      - arm64
     env:
-      - CGO_ENABLED=0
+      - CGO_ENABLED=1
+    # Skip macOS and Windows - CGO cross-compilation from Linux requires native toolchains
+    # macOS and Windows users should build from source: make build
+    skip:
+      - goos: darwin
+      - goos: windows
     ldflags:
       - -s -w
       - -X main.Version={{.Version}}
