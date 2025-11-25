@@ -103,13 +103,23 @@ function Install-Envgrd {
         New-Item -ItemType Directory -Path $EXTRACT_DIR -Force | Out-Null
         Expand-Archive -Path $ZIP_PATH -DestinationPath $EXTRACT_DIR -Force
         
-        # Find the binary (could be envgrd.exe or in a subdirectory)
+        # Find the binary (could be envgrd.exe or envgrd.exe.exe due to GoReleaser bug)
+        Write-Output "Searching for binary in: $EXTRACT_DIR"
         $BINARY_PATH = Get-ChildItem -Path $EXTRACT_DIR -Filter "${BINARY_NAME}.exe" -Recurse | Select-Object -First 1
         
+        # If not found, try looking for .exe.exe (GoReleaser bug)
         if (-not $BINARY_PATH) {
+            Write-Output "Not found as ${BINARY_NAME}.exe, trying ${BINARY_NAME}.exe.exe..."
+            $BINARY_PATH = Get-ChildItem -Path $EXTRACT_DIR -Filter "${BINARY_NAME}.exe.exe" -Recurse | Select-Object -First 1
+        }
+        
+        # If still not found, list all .exe files
+        if (-not $BINARY_PATH) {
+            Write-Output "Listing all .exe files in archive:"
+            Get-ChildItem -Path $EXTRACT_DIR -Filter "*.exe" -Recurse | ForEach-Object { Write-Output "  $($_.FullName)" }
             Write-ColorOutput Red "Error: Could not find ${BINARY_NAME}.exe in downloaded archive"
             Write-Output "Extracted to: $EXTRACT_DIR"
-            Write-Output "Contents:"
+            Write-Output "All contents:"
             Get-ChildItem -Path $EXTRACT_DIR -Recurse | Select-Object FullName | ForEach-Object { Write-Output "  $($_.FullName)" }
             Write-Output ""
             Write-Output "Press any key to exit..."
@@ -118,6 +128,12 @@ function Install-Envgrd {
         }
         
         Write-Output "Found binary at: $($BINARY_PATH.FullName)"
+        
+        # If it's .exe.exe, we need to rename it when copying
+        $BINARY_EXTENSION = [System.IO.Path]::GetExtension($BINARY_PATH.Name)
+        if ($BINARY_EXTENSION -eq ".exe" -and $BINARY_PATH.Name -like "*.exe.exe") {
+            Write-ColorOutput Yellow "Warning: Binary has double .exe extension (GoReleaser bug), will rename during install"
+        }
         
         # Create install directory
         Write-Output "Install directory: $INSTALL_DIR"

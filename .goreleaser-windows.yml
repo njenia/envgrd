@@ -6,7 +6,7 @@ builds:
   # Windows builds (amd64 only - ARM64 CGO cross-compilation not supported)
   - id: envgrd-windows
     main: ./cmd/envgrd
-    binary: envgrd.exe
+    binary: envgrd
     goos:
       - windows
     goarch:
