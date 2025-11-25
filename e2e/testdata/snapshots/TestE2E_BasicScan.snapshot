@@ -1,0 +1,13 @@
+  ____ __  __ __ __   ___  ____  ____  
+ ||    ||\ || || ||  // \\ || \\ || \\ 
+ ||==  ||\\|| \\ // (( ___ ||_// ||  ))
+ ||___ || \||  \V/   \\_|| || \\ ||_// 
+                                                          
+Version: [VERSION]
+
+Scanning [TEMP_DIR]...
+Found 2 files (js: 1, go: 1)
+Unused variables:
+
+  UNUSED_VAR=u...d (in .env)
+
