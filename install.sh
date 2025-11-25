@@ -9,7 +9,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # GitHub repository
-REPO="jenian/envgrd"
+REPO="njenia/envgrd"
 BINARY_NAME="envgrd"
 INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
 

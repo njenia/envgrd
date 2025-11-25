@@ -34,30 +34,30 @@ Envgrd uses Tree-Sitter AST analysis to accurately detect environment variable u
 Install with a single command (auto-detects OS and architecture):
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/jenian/envgrd/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/njenia/envgrd/main/install.sh | bash
 ```
 
 ### Manual Install
 
 **Linux (amd64):**
 ```bash
-curl -L https://github.com/jenian/envgrd/releases/latest/download/envgrd-linux-amd64.tar.gz | tar -xz && sudo mv envgrd /usr/local/bin/
+curl -L https://github.com/njenia/envgrd/releases/latest/download/envgrd-linux-amd64.tar.gz | tar -xz && sudo mv envgrd /usr/local/bin/
 ```
 
 **macOS (amd64 / Intel):**
 ```bash
-curl -L https://github.com/jenian/envgrd/releases/latest/download/envgrd-darwin-amd64.tar.gz | tar -xz && sudo mv envgrd /usr/local/bin/
+curl -L https://github.com/njenia/envgrd/releases/latest/download/envgrd-darwin-amd64.tar.gz | tar -xz && sudo mv envgrd /usr/local/bin/
 ```
 
 **macOS (arm64 / Apple Silicon):**
 ```bash
-curl -L https://github.com/jenian/envgrd/releases/latest/download/envgrd-darwin-arm64.tar.gz | tar -xz && sudo mv envgrd /usr/local/bin/
+curl -L https://github.com/njenia/envgrd/releases/latest/download/envgrd-darwin-arm64.tar.gz | tar -xz && sudo mv envgrd /usr/local/bin/
 ```
 
 **Windows:**
 ```powershell
 # Download and extract
-curl -L https://github.com/jenian/envgrd/releases/latest/download/envgrd-windows-amd64.zip -o envgrd.zip
+curl -L https://github.com/njenia/envgrd/releases/latest/download/envgrd-windows-amd64.zip -o envgrd.zip
 Expand-Archive envgrd.zip
 # Move envgrd.exe to a directory in your PATH
 ```
@@ -67,7 +67,7 @@ Expand-Archive envgrd.zip
 Pre-built binaries for ARM64 Linux are not available due to CGO cross-compilation requirements. Please build from source:
 
 ```bash
-git clone https://github.com/jenian/envgrd.git
+git clone https://github.com/njenia/envgrd.git
 cd envgrd
 make build
 # Binary will be in bin/envgrd
@@ -77,7 +77,7 @@ make build
 
 ```bash
 # Clone the repository
-git clone https://github.com/jenian/envgrd.git
+git clone https://github.com/njenia/envgrd.git
 cd envgrd
 
 # Build with Make (automatically detects version from git tags)
@@ -90,7 +90,7 @@ make install
 ### Using Go Install
 
 ```bash
-go install github.com/jenian/envgrd/cmd/envgrd@latest
+go install github.com/njenia/envgrd/cmd/envgrd@latest
 ```
 
 **Note**: When building locally, use `make build` to automatically set the version from git tags. Building with `go build` directly will show version as "dev".
