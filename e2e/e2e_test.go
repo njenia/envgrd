@@ -8,88 +8,74 @@ import (
 	"testing"
 )
 
-var binaryPath string
-
-func TestMain(m *testing.M) {
-	// Build the binary for testing
-	buildDir := filepath.Join("..", "bin")
-	if err := os.MkdirAll(buildDir, 0755); err != nil {
-		panic("Failed to create bin directory: " + err.Error())
+func getBinaryPath() string {
+	// Try ./envgrd first
+	if _, err := os.Stat("./envgrd"); err == nil {
+		return "./envgrd"
 	}
-
-	binaryPath = filepath.Join(buildDir, "envgrd")
-	buildCmd := exec.Command("go", "build", "-o", binaryPath, "../cmd/envgrd")
-	buildCmd.Env = append(os.Environ(), "CGO_ENABLED=1")
-	if err := buildCmd.Run(); err != nil {
-		panic("Failed to build binary: " + err.Error())
+	// Try bin/envgrd
+	if _, err := os.Stat("bin/envgrd"); err == nil {
+		return "bin/envgrd"
 	}
-
-	// Run tests
-	code := m.Run()
-
-	// Cleanup
-	os.Exit(code)
+	// Fallback to just "envgrd" (assumes it's in PATH)
+	return "envgrd"
 }
 
 func setupMockRepo(t *testing.T) string {
+	// Get the testdata directory
+	testdataDir := filepath.Join("testdata", "mock-repo")
+	
+	// Check if testdata directory exists
+	if _, err := os.Stat(testdataDir); os.IsNotExist(err) {
+		t.Fatalf("Testdata directory not found: %s", testdataDir)
+	}
+
+	// Copy testdata to a temporary directory
 	tmpDir := t.TempDir()
-
-	// Create source files with environment variable usage
-	srcDir := filepath.Join(tmpDir, "src")
-	if err := os.MkdirAll(srcDir, 0755); err != nil {
-		t.Fatalf("Failed to create src directory: %v", err)
+	
+	// Copy all files from testdata to tmpDir
+	err := filepath.Walk(testdataDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		
+		// Get relative path from testdataDir
+		relPath, err := filepath.Rel(testdataDir, path)
+		if err != nil {
+			return err
+		}
+		
+		destPath := filepath.Join(tmpDir, relPath)
+		
+		if info.IsDir() {
+			return os.MkdirAll(destPath, info.Mode())
+		}
+		
+		// Read source file
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		
+		// Write to destination
+		return os.WriteFile(destPath, data, info.Mode())
+	})
+	
+	if err != nil {
+		t.Fatalf("Failed to copy testdata: %v", err)
 	}
-
-	// Create Go file with env var usage
-	goFile := filepath.Join(srcDir, "main.go")
-	goCode := `package main
-
-import (
-	"fmt"
-	"os"
-)
-
-func main() {
-	apiKey := os.Getenv("API_KEY")
-	dbUrl := os.Getenv("DATABASE_URL")
-	fmt.Println(apiKey, dbUrl)
-}
-`
-	if err := os.WriteFile(goFile, []byte(goCode), 0644); err != nil {
-		t.Fatalf("Failed to write Go file: %v", err)
-	}
-
-	// Create JavaScript file with env var usage
-	jsFile := filepath.Join(srcDir, "config.js")
-	jsCode := `const apiKey = process.env.API_KEY;
-const dbUrl = process.env["DATABASE_URL"];
-const secret = process.env.SECRET_KEY;
-`
-	if err := os.WriteFile(jsFile, []byte(jsCode), 0644); err != nil {
-		t.Fatalf("Failed to write JS file: %v", err)
-	}
-
-	// Create .env file with some variables
-	envFile := filepath.Join(tmpDir, ".env")
-	envContent := `API_KEY=test123
-DATABASE_URL=postgres://localhost/db
-SECRET_KEY=secret123
-UNUSED_VAR=unused
-`
-	if err := os.WriteFile(envFile, []byte(envContent), 0644); err != nil {
-		t.Fatalf("Failed to write .env file: %v", err)
-	}
-
+	
 	return tmpDir
 }
 
 func TestE2E_BasicScan(t *testing.T) {
 	mockRepo := setupMockRepo(t)
+	binaryPath := getBinaryPath()
 
 	// Run envgrd scan
 	cmd := exec.Command(binaryPath, "scan", mockRepo)
 	output, err := cmd.CombinedOutput()
-	
+
 	outputStr := string(output)
 
 	// Verify that the scan found files
@@ -127,4 +113,3 @@ func TestE2E_BasicScan(t *testing.T) {
 		}
 	}
 }
-
