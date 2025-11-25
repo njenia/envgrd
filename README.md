@@ -110,7 +110,7 @@ go install github.com/njenia/envgrd/cmd/envgrd@latest
 
 **Note**: When building locally, use `make build` to automatically set the version from git tags. Building with `go build` directly will show version as "dev".
 
-## Usage {#usage}
+## Usage
 
 ### Basic scan
 
@@ -169,7 +169,7 @@ See the [Dynamic Expression Matching](#dynamic-expression-matching) section for 
 envgrd scan --silent
 ```
 
-## Supported Languages {#supported-languages}
+## Supported Languages
 
 All languages support both static (string literal) and dynamic (runtime-evaluated) environment variable patterns:
 
@@ -219,7 +219,7 @@ ignores:
 - **`ignores.missing`**: Variables listed here will not be reported as missing, even if they're not found in any environment files. The tool will show a count of ignored variables in the output.
 - **`ignores.folders`**: Folders listed here will be excluded from scanning. This is useful for configuration directories (like Kubernetes manifests, deployment configs) that contain environment variable references but aren't actual running code.
 
-## Environment Variable Sources {#environment-variable-sources}
+## Environment Variable Sources
 
 `envgrd` automatically detects and reads environment variables from multiple sources:
 
