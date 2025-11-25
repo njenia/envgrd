@@ -3,47 +3,23 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'  # Triggers on tags like v1.0.0, v0.2.1, etc.
+      - 'v*'
 
 permissions:
-  contents: write  # Required for creating releases and uploading assets
+  contents: write 
 
 jobs:
-  # Build Linux binaries (creates the release)
-  build-linux:
-    name: Build Linux
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Required for changelog generation
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: 'go.mod'
-
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v6
-        with:
-          version: latest
-          args: release --clean --config .goreleaser.yml
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-
-  # Build macOS and Windows binaries (append to release)
-  build-others:
+  build:
     name: Build ${{ matrix.name }}
     runs-on: ${{ matrix.runner }}
-    needs: build-linux  # Wait for Linux job to create release first
     permissions:
       contents: write
     strategy:
       matrix:
         include:
+          - name: Linux
+            runner: ubuntu-latest
+            config: .goreleaser.yml
           - name: macOS
             runner: macos-latest
             config: .goreleaser-darwin.yml
@@ -54,7 +30,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Required for changelog generation
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v5
