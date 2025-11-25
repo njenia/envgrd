@@ -28,10 +28,10 @@ archives:
     files:
       - README.md
 
-# Checksums
-checksum:
-  name_template: 'checksums.txt'
-  algorithm: sha256
+# Checksums - skip for macOS since Linux job already creates checksums.txt
+# checksum:
+#   name_template: 'checksums.txt'
+#   algorithm: sha256
 
 # Release configuration
 release:
