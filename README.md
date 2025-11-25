@@ -2,22 +2,19 @@
 
 <div align="center">
 
-## **Avoid environment variable drift** between your code and configuration files
+ **Avoid environment variable drift** between your code and configuration files
+
+[![CI](https://github.com/jenian/envgrd/actions/workflows/ci.yml/badge.svg)](https://github.com/jenian/envgrd/actions/workflows/ci.yml)
 
 </div>
 
 ![Example](example_shot.png)
 
-### When does drift happen?
+### Why use envgrd?
 
-Environment variable drift occurs in common scenarios like:
-- **Team collaboration**: You pull code and a teammate forgot to update the team about a new variable they introduced
-- **Code refactoring**: A developer removes or renames an environment variable in code but forgets to update the `.env` file or documentation
-- **Configuration cleanup**: Old environment variables remain in config files after the code that used them has been removed
-- **Onboarding**: New team members clone the repo and miss required environment variables that aren't documented
-- **Multi-environment setups**: Variables work in development but are missing in staging or production configurations
+Environment variable drift happens when code and configuration get out of sync—teammates add new variables without updating configs, refactoring leaves orphaned variables, or onboarding misses undocumented requirements. These issues cause runtime failures and deployment headaches.
 
-Envgrd is a CLI tool that scans codebases for environment variable usages using Tree-Sitter AST analysis and compares them with environment configuration files and exported shell variables. Unlike regex-based approaches, AST analysis provides accurate parsing that understands code structure, handles edge cases correctly, and supports dynamic pattern detection across multiple languages with less false-positives and better accuracy.
+Envgrd uses Tree-Sitter AST analysis to accurately detect environment variable usage across your codebase and compare it with your configuration files. Unlike regex-based tools, AST parsing understands code structure, handles edge cases correctly, and supports dynamic patterns with fewer false positives.
 
 **💡 Tip**: Automate drift detection by using `envgrd` as a post-merge git hook to catch issues automatically after pulling code.
 
