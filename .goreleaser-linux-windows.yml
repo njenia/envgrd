@@ -19,22 +19,8 @@ builds:
       - -X main.Version={{.Version}}
     flags:
       - -trimpath
-  # Windows builds (both architectures)
-  - id: envgrd-windows
-    main: ./cmd/envgrd
-    binary: envgrd
-    goos:
-      - windows
-    goarch:
-      - amd64
-      - arm64
-    env:
-      - CGO_ENABLED=1
-    ldflags:
-      - -s -w
-      - -X main.Version={{.Version}}
-    flags:
-      - -trimpath
+  # Windows builds skipped - CGO cross-compilation from Linux requires Windows toolchain
+  # Windows users should build from source: make build
 
 # Archive configuration
 archives:
