@@ -1,0 +1,59 @@
+# Goreleaser configuration for Windows builds
+project_name: envgrd
+
+# Build configuration
+builds:
+  # Windows builds (both architectures)
+  - id: envgrd-windows
+    main: ./cmd/envgrd
+    binary: envgrd.exe
+    goos:
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=1
+    ldflags:
+      - -s -w
+      - -X main.Version={{.Version}}
+    flags:
+      - -trimpath
+
+# Archive configuration
+archives:
+  - id: default
+    format: zip
+    name_template: >-
+      {{ .ProjectName }}-{{ .Os }}-{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}
+    files:
+      - README.md
+
+# Checksums - skipped for Windows since Linux job already creates checksums.txt
+# The Linux job creates checksums.txt, and Windows job appends binaries only
+
+# Release configuration
+release:
+  mode: append
+  header: |
+    ## Envgrd {{ .Tag }}
+    
+    Automated release via [GoReleaser](https://goreleaser.com)
+  footer: |
+    ---
+    
+    Built with ❤️ by [GoReleaser](https://github.com/goreleaser/goreleaser)
+  
+  # Mark pre-releases (tags containing '-')
+  prerelease: auto
+
+# Changelog
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - Merge pull request
+      - Merge branch
+
