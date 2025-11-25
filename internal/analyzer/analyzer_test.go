@@ -117,8 +117,9 @@ func TestAnalyze_IgnoredMissing(t *testing.T) {
 			Missing: []string{"CUSTOM_VAR"},
 		},
 	}
+	envKeySources := make(map[string]string)
 
-	result := Analyze(codeUsages, envVars, envVars, cfg)
+	result := Analyze(codeUsages, envVars, envVars, envKeySources, cfg)
 
 	// Should find 1 missing key (DATABASE_URL), CUSTOM_VAR should be ignored
 	if len(result.Missing) != 1 {
